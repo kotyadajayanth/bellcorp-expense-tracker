@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import API from "../services/api";
 import Navbar from "../components/Navbar";
 
@@ -16,22 +16,26 @@ function Explorer() {
 
   const limit = 5;
 
-  const fetchTransactions = useCallback(async () => {
-    try {
-      let url = `/transactions?page=${page}&limit=${limit}`;
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        let url = `/transactions?page=${page}&limit=${limit}`;
 
-      if (search !== "") url += `&search=${search}`;
-      if (category !== "All") url += `&category=${category}`;
+        if (search !== "") url += `&search=${search}`;
+        if (category !== "All") url += `&category=${category}`;
 
-      const res = await API.get(url);
+        const res = await API.get(url);
 
-      setTransactions(res.data.transactions || []);
-      setTotal(res.data.total || 0);
-    } catch (error) {
-      console.log(error);
-      setTransactions([]);
-      setTotal(0);
-    }
+        setTransactions(res.data.transactions || []);
+        setTotal(res.data.total || 0);
+      } catch (error) {
+        console.log(error);
+        setTransactions([]);
+        setTotal(0);
+      }
+    };
+
+    fetchTransactions();
   }, [page, search, category]);
 
   const handleAddTransaction = async (e) => {
@@ -60,15 +64,11 @@ function Explorer() {
       setAmount("");
       setNewCategory("Food");
 
-      fetchTransactions();
+      setPage(1);
     } catch (error) {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
 
   return (
     <div>
@@ -151,7 +151,7 @@ function Explorer() {
               <button
                 onClick={async () => {
                   await API.delete(`/transactions/${t._id}`);
-                  fetchTransactions();
+                  setPage(1);
                 }}
               >
                 Delete
