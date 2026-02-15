@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import API from "../services/api";
 import Navbar from "../components/Navbar";
 
@@ -16,7 +16,7 @@ function Explorer() {
 
   const limit = 5;
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       let url = `/transactions?page=${page}&limit=${limit}`;
 
@@ -32,41 +32,43 @@ function Explorer() {
       setTransactions([]);
       setTotal(0);
     }
-  };
+  }, [page, search, category]);
 
   const handleAddTransaction = async (e) => {
     e.preventDefault();
 
     if (!title || !amount) return;
 
-    if (editId) {
-      await API.put(`/transactions/${editId}`, {
-        title,
-        amount: Number(amount),
-        category: newCategory
-      });
-      setEditId(null);
-    } else {
-      await API.post("/transactions", {
-        title,
-        amount: Number(amount),
-        category: newCategory,
-        date: new Date()
-      });
+    try {
+      if (editId) {
+        await API.put(`/transactions/${editId}`, {
+          title,
+          amount: Number(amount),
+          category: newCategory
+        });
+        setEditId(null);
+      } else {
+        await API.post("/transactions", {
+          title,
+          amount: Number(amount),
+          category: newCategory,
+          date: new Date()
+        });
+      }
+
+      setTitle("");
+      setAmount("");
+      setNewCategory("Food");
+
+      fetchTransactions();
+    } catch (error) {
+      console.log(error);
     }
-
-    setTitle("");
-    setAmount("");
-    setNewCategory("Food");
-
-    fetchTransactions();
   };
 
   useEffect(() => {
-  fetchTransactions();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [page, search, category]);
-
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   return (
     <div>
