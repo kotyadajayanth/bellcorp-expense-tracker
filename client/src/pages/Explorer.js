@@ -63,8 +63,10 @@ function Explorer() {
   };
 
   useEffect(() => {
-    fetchTransactions();
-  }, [page, search, category]);
+  fetchTransactions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [page, search, category]);
+
 
   return (
     <div>
